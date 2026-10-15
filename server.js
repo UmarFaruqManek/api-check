@@ -208,10 +208,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, () => {
   console.log(`=================================================`);
   console.log(`🚀 WHOIS API Server aktif di: http://localhost:${PORT}`);
   console.log(`📡 Endpoint API: http://localhost:${PORT}/api/whois?domain=dicoding.com`);
   console.log(`🖥️  Testing UI:  http://localhost:${PORT}`);
   console.log(`=================================================`);
-});
+  });
+}
