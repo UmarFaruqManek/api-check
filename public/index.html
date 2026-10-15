@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WHOIS & Domain Data API Tester</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="header-badge">API REST & WHOIS Parser</div>
+      <h1>WHOIS Domain API Tester</h1>
+      <p class="subtitle">API untuk mengambil informasi domain dalam format JSON terstruktur (RDAP + Port 43 Fallback + Smart Caching).</p>
+      
+      <div class="endpoint-pill">
+        <span class="method">GET</span>
+        <code id="apiEndpointUrl">/api/whois?domain=dicoding.com</code>
+        <a id="openApiLink" href="/api/whois?domain=dicoding.com" target="_blank" title="Buka JSON langsung di tab baru">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Buka Raw JSON
+        </a>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- Search & Input Card -->
+      <section class="card query-card">
+        <form id="searchForm" class="search-form">
+          <div class="input-wrapper">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="domainInput" placeholder="Masukkan nama domain (contoh: dicoding.com)" value="dicoding.com" autocomplete="off" required>
+            <button type="submit" id="submitBtn" class="btn-primary">
+              <span class="btn-text">Cek Domain</span>
+              <div class="spinner" id="spinner"></div>
+            </button>
+          </div>
+        </form>
+
+        <div class="quick-examples">
+          <span class="quick-label">Contoh Cepat:</span>
+          <button class="chip" data-domain="dicoding.com">dicoding.com</button>
+          <button class="chip" data-domain="google.com">google.com</button>
+          <button class="chip" data-domain="github.com">github.com</button>
+          <button class="chip" data-domain="kominfo.go.id">kominfo.go.id</button>
+        </div>
+      </section>
+
+      <!-- Results Grid -->
+      <section id="resultSection" class="result-section hidden">
+        <!-- Status Banner -->
+        <div class="status-banner">
+          <div class="meta-item">
+            <span class="meta-label">Status:</span>
+            <span class="badge badge-success" id="resStatus">200 OK</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Sumber Data:</span>
+            <span class="badge badge-info" id="resSource">RDAP</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Response Time:</span>
+            <span class="meta-value font-mono" id="resTime">45 ms</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Domain:</span>
+            <span class="meta-value font-mono font-bold" id="resDomain">dicoding.com</span>
+          </div>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="info-grid">
+          <div class="card info-card">
+            <div class="card-icon">🏢</div>
+            <div class="card-body">
+              <span class="info-label">Registrar</span>
+              <h3 id="infoRegistrar">-</h3>
+              <p class="info-sub" id="infoHandle">-</p>
+            </div>
+          </div>
+
+          <div class="card info-card">
+            <div class="card-icon">📅</div>
+            <div class="card-body">
+              <span class="info-label">Tanggal Kedaluwarsa (Expiry)</span>
+              <h3 id="infoExpiry">-</h3>
+              <p class="info-sub" id="infoExpiryCountdown">-</p>
+            </div>
+          </div>
+
+          <div class="card info-card">
+            <div class="card-icon">🚀</div>
+            <div class="card-body">
+              <span class="info-label">Tanggal Didaftarkan (Created)</span>
+              <h3 id="infoCreated">-</h3>
+              <p class="info-sub" id="infoUpdated">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Name Servers & Status Badges -->
+        <div class="details-grid">
+          <div class="card">
+            <h4 class="card-title">Nameservers (DNS)</h4>
+            <ul id="infoNameservers" class="ns-list">
+              <li>-</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h4 class="card-title">Domain Status (EPP Codes)</h4>
+            <div id="infoStatuses" class="status-tags">
+              <span>-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- JSON Viewer Section -->
+        <div class="card json-card">
+          <div class="json-header">
+            <div class="json-title">
+              <span class="dot green"></span>
+              <span>Raw JSON Response</span>
+            </div>
+            <button id="copyJsonBtn" class="btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Salin JSON</span>
+            </button>
+          </div>
+          <pre id="jsonOutput" class="code-block font-mono">Loading...</pre>
+        </div>
+      </section>
+
+      <!-- Error Box -->
+      <div id="errorBox" class="card error-box hidden">
+        <div class="error-icon">⚠️</div>
+        <div>
+          <h4 id="errorTitle">Terjadi Kesalahan</h4>
+          <p id="errorMessage">-</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>Dibangun dengan Express.js • RDAP Engine • Smart In-Memory TTL Caching</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
