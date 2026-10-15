@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const whois = require('whois-json');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -79,6 +78,9 @@ async function queryRdap(domain) {
  * Fallback: Query WHOIS Port 43 via whois-json
  */
 async function queryWhoisPort43(domain) {
+  // whois-json terbaru adalah ES module; gunakan dynamic import agar
+  // tetap kompatibel dengan server CommonJS dan Vercel Functions.
+  const { default: whois } = await import('whois-json');
   const raw = await whois(domain, { follow: 3, timeout: 8000 });
   
   // Deteksi pesan notice atau limit
